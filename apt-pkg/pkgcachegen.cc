@@ -649,6 +649,17 @@ static bool CheckValidity(string CacheFile, FileIterator Start,
 	 continue;
       }
 
+      // Band-aid for cache corruption issue (RH bugzilla #211254) 
+      // until real cause and cure is found
+      for (pkgCache::PkgFileIterator File = Cache.FileBegin(); 
+	    File.end() == false; File++) {
+	 if (File.FileName() == NULL) {
+	    _error->Warning(_("Cache corruption detected, band-aid applied."));
+	    _error->Warning(_("See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=211254 for further info."));
+	    return false;
+	 }
+      }
+
       // FindInCache is also expected to do an IMS check.
       pkgCache::PkgFileIterator File = (*Start)->FindInCache(Cache);
       if (File.end() == true)
