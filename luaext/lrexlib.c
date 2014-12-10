@@ -161,7 +161,7 @@ static int posix_gc (lua_State *L) {
   return 0;
 }
 
-static const luaL_reg posixmeta[] = {
+static const luaL_Reg posixmeta[] = {
   {"match",   posix_match},
   {"gmatch",  posix_gmatch},
   {"__gc",    posix_gc},
@@ -285,7 +285,7 @@ static int pcre_gc (lua_State *L)
   return 0;
 }
 
-static const luaL_reg pcremeta[] = {
+static const luaL_Reg pcremeta[] = {
   {"match",  pcre_match},
   {"gmatch", pcre_gmatch},
   {"__gc",   pcre_gc},
@@ -297,7 +297,7 @@ static const luaL_reg pcremeta[] = {
 
 /* Open the library */
 
-static const luaL_reg rexlib[] = {
+static const luaL_Reg rexlib[] = {
 #ifdef WITH_POSIX
   {"newPOSIX", posix_comp},
 #endif
