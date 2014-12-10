@@ -206,7 +206,7 @@ bool RPMHdrHandler::PRCO(unsigned int Type, vector<Dependency*> &Deps) const
 	 deptype = RPMTAG_PROVIDENAME;
 	 break;
       case pkgCache::Dep::Suggests:
-	 deptype = RPMTAG_SUGGESTSNAME;
+	 deptype = RPMTAG_SUGGESTNAME;
 	 break;
 #if 0 // Enhances dep type is not even known to apt, sigh..
       case pkgCache::Dep::Enhances:
