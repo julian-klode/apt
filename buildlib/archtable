@@ -18,6 +18,7 @@ ppc	ppc
 powerpc	ppc
 ppc64		ppc64
 powerpc64	ppc64
+powerpc64le	ppc64le
 mipsel  mipsel
 mipseb	mips
 mips	mips
