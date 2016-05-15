@@ -69,6 +69,7 @@ class HashString
    std::string toStr() const;                    // convert to str as "type:hash"
    bool empty() const;
    bool usable() const;
+   bool deprecated() const APT_HIDDEN;
    bool operator==(HashString const &other) const;
    bool operator!=(HashString const &other) const;
 
@@ -141,6 +142,11 @@ class HashStringList
     * if one is forced \b true if this has is available, \b false otherwise
     */
    bool usable() const;
+   /** are all entries deprecated
+    *
+    * Do not use.
+    */
+   bool deprecated() const;
 
    typedef std::vector<HashString>::const_iterator const_iterator;
 

@@ -434,7 +434,7 @@ bool DoSource(CommandLine &CmdL)
 	    }
 
 	 // see if we have a hash (Acquire::ForceHash is the only way to have none)
-	 if (I->Hashes.usable() == false && _config->FindB("APT::Get::AllowUnauthenticated",false) == false)
+	 if ((I->Hashes.usable() == false || I->Hashes.deprecated() == true) && _config->FindB("APT::Get::AllowUnauthenticated",false) == false)
 	 {
 	    ioprintf(c1out, "Skipping download of file '%s' as requested hashsum is not available for authentication\n",
 		  localFile.c_str());

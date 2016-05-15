@@ -298,6 +298,7 @@ TEST(HashSumsTest, FileBased)
 TEST(HashSumsTest, HashStringList)
 {
    _config->Clear("Acquire::ForceHash");
+   _config->Set("APT::Hashes::SHA1::Untrusted", "yes");
 
    HashStringList list;
    EXPECT_TRUE(list.empty());

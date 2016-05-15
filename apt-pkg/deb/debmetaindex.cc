@@ -410,6 +410,7 @@ bool debReleaseIndex::Load(std::string const &Filename, std::string * const Erro
 
    bool FoundHashSum = false;
    bool FoundStrongHashSum = false;
+   bool AllDeprecatedHashSum = true;
    auto const SupportedHashes = HashString::SupportedHashes();
    for (int i=0; SupportedHashes[i] != NULL; i++)
    {
@@ -436,6 +437,8 @@ bool debReleaseIndex::Load(std::string const &Filename, std::string * const Erro
          }
          Entries[Name]->Hashes.push_back(hs);
          FoundHashSum = true;
+	 if (AllDeprecatedHashSum == true && hs.deprecated() == false)
+	    AllDeprecatedHashSum = false;
 	 if (FoundStrongHashSum == false && hs.usable() == true)
 	    FoundStrongHashSum = true;
       }
@@ -452,6 +455,10 @@ bool debReleaseIndex::Load(std::string const &Filename, std::string * const Erro
       if (ErrorText != NULL)
 	 strprintf(*ErrorText, _("No Hash entry in Release file %s which is considered strong enough for security purposes"), Filename.c_str());
       return false;
+   }
+   else if(AllDeprecatedHashSum == true)
+   {
+      _error->Warning(_("No Hash entry in Release file %s which is considered strong enough for security purposes"), Filename.c_str());
    }
 
    std::string const StrDate = Section.FindS("Date");

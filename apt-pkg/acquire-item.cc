@@ -2983,7 +2983,21 @@ pkgAcqArchive::pkgAcqArchive(pkgAcquire * const Owner,pkgSourceList * const Sour
          std::cerr << "Checking index: " << Index->Describe()
                    << "(Trusted=" << Index->IsTrusted() << ")" << std::endl;
 
-      if (Index->IsTrusted() == true)
+      // Mark a package as untrusted if the hashes are unusable or deprecated
+      bool HashesTrusted = true;
+      // Local source (install .deb) does not require hashes
+      if (i.File().Flagged(pkgCache::Flag::LocalSource) == false)
+      {
+	 // Grab the text package record
+	 pkgRecords::Parser &Parse = Recs->Lookup(Vf);
+	 if (_error->PendingError() == true)
+	    return;
+
+	 auto ThisExpectedHashes = Parse.Hashes();
+	 HashesTrusted = ThisExpectedHashes.usable() == true && ThisExpectedHashes.deprecated() == false;
+      }
+
+      if (Index->IsTrusted() == true && HashesTrusted == true)
       {
          Trusted = true;
 	 if (allowUnauth == false)

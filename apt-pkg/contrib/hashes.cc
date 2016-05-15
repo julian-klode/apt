@@ -142,8 +142,17 @@ APT_PURE bool HashString::usable() const				/*{{{*/
    return (
       (Type != "Checksum-FileSize") &&
       (Type != "MD5Sum") &&
-      (Type != "SHA1") &&
       !IsConfigured(Type.c_str(), "Untrusted")
+   );
+}
+
+APT_PURE bool HashString::deprecated() const				/*{{{*/
+{
+   return (
+      (Type == "Checksum-FileSize") ||
+      (Type == "MD5Sum") ||
+      (Type == "SHA1") ||
+      IsConfigured(Type.c_str(), "Weak")
    );
 }
 									/*}}}*/
@@ -176,6 +185,12 @@ bool HashStringList::usable() const					/*{{{*/
       return false;
    }
    return find(forcedType) != NULL;
+}
+bool HashStringList::deprecated() const					/*{{{*/
+{
+   return std::all_of(list.begin(), list.end(), [](HashString const &hs) {
+      return hs.deprecated() || !hs.usable();
+   });
 }
 									/*}}}*/
 HashString const * HashStringList::find(char const * const type) const /*{{{*/
