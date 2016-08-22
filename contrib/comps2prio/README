@@ -1,0 +1,3 @@
+Generate rpmpriorities using comps.xml data
+
+xsltproc -o /etc/apt/rpmpriorities comps2prio.xsl /usr/share/comps/`rpm -E %{_build_arch}`/comps.xml
