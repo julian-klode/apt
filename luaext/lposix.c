@@ -49,6 +49,15 @@ static const char *filetype(mode_t m)
 
 typedef int (*Selector)(lua_State *L, int i, const void *data);
 
+/* implemented as luaL_typerror until lua 5.1, dropped in 5.2
+ * (C) 1994-2012 Lua.org, PUC-Rio. MIT license
+ */
+static int typerror (lua_State *L, int narg, const char *tname) {
+	const char *msg = lua_pushfstring(L, "%s expected, got %s",
+                                         tname, luaL_typename(L, narg));
+	return luaL_argerror(L, narg, msg);
+}
+
 static int doselection(lua_State *L, int i, const char *const S[], Selector F, const void *data)
 {
 	if (lua_isnone(L, i))
@@ -135,7 +144,7 @@ static uid_t mygetuid(lua_State *L, int i)
 		return (p==NULL) ? -1 : p->pw_uid;
 	}
 	else
-		return luaL_typerror(L, i, "string or number");
+		return typerror(L, i, "string or number");
 }
 
 static gid_t mygetgid(lua_State *L, int i)
@@ -150,7 +159,7 @@ static gid_t mygetgid(lua_State *L, int i)
 		return (g==NULL) ? -1 : g->gr_gid;
 	}
 	else
-		return luaL_typerror(L, i, "string or number");
+		return typerror(L, i, "string or number");
 }
 
 
@@ -339,22 +348,22 @@ static int Pfork(lua_State *L)			/** fork() */
 
 static int Pwait(lua_State *L)			/** wait([pid]) */
 {
-	pid_t pid = luaL_optint(L, 1, -1);
+	pid_t pid = luaL_optinteger(L, 1, -1);
 	return pushresult(L, waitpid(pid, NULL, 0), NULL);
 }
 
 
 static int Pkill(lua_State *L)			/** kill(pid,[sig]) */
 {
-	pid_t pid = luaL_checkint(L, 1);
-	int sig = luaL_optint(L, 2, SIGTERM);
+	pid_t pid = luaL_checkinteger(L, 1);
+	int sig = luaL_optinteger(L, 2, SIGTERM);
 	return pushresult(L, kill(pid, sig), NULL);
 }
 
 
 static int Psleep(lua_State *L)			/** sleep(seconds) */
 {
-	unsigned int seconds = luaL_checkint(L, 1);
+	unsigned int seconds = luaL_checkinteger(L, 1);
 	lua_pushnumber(L, sleep(seconds));
 	return 1;
 }
@@ -501,7 +510,7 @@ static int Pgetprocessid(lua_State *L)		/** getprocessid([selector]) */
 
 static int Pttyname(lua_State *L)		/** ttyname(fd) */
 {
-	int fd=luaL_optint(L, 1, 0);
+	int fd=luaL_optinteger(L, 1, 0);
 	lua_pushstring(L, ttyname(fd));
 	return 1;
 }
@@ -554,7 +563,7 @@ static int Pgetpasswd(lua_State *L)		/** getpasswd(name or id) */
 	else if (lua_isstring(L, 1))
 		p = getpwnam(lua_tostring(L, 1));
 	else
-		luaL_typerror(L, 1, "string or number");
+		typerror(L, 1, "string or number");
 	if (p==NULL)
 		lua_pushnil(L);
 	else
@@ -571,7 +580,7 @@ static int Pgetgroup(lua_State *L)		/** getgroup(name or id) */
 	else if (lua_isstring(L, 1))
 		g = getgrnam(lua_tostring(L, 1));
 	else
-		luaL_typerror(L, 1, "string or number");
+		typerror(L, 1, "string or number");
 	if (g==NULL)
 		lua_pushnil(L);
 	else
@@ -690,10 +699,10 @@ static int Puname(lua_State *L)			/** uname([string]) */
 	luaL_buffinit(L, &b);
 	for (s=luaL_optstring(L, 1, "%s %n %r %v %m"); *s; s++)
 		if (*s!='%')
-			luaL_putchar(&b, *s);
+			luaL_addchar(&b, *s);
 		else switch (*++s)
 		{
-			case '%': luaL_putchar(&b, *s); break;
+			case '%': luaL_addchar(&b, *s); break;
 			case 'm': luaL_addstring(&b,u.machine); break;
 			case 'n': luaL_addstring(&b,u.nodename); break;
 			case 'r': luaL_addstring(&b,u.release); break;
@@ -792,7 +801,7 @@ static int Pmkstemp(lua_State *L)
 }
 
 
-static const luaL_reg R[] =
+static const luaL_Reg R[] =
 {
 	{"access",		Paccess},
 	{"chdir",		Pchdir},
