@@ -420,37 +420,31 @@ bool Solver::Propagate(const Clause *clause, Lit p)
    }
 
    // Check if the clause is unit, conflict, or undecided
-   Lit unit;
-   for (auto sol : clause->solutions)
+   auto not_false = [&](auto lit) { return value(lit) != LiftedBool::False; };
+   auto head = std::ranges::find_if(clause->solutions, not_false);
+   auto find_tail = [&]() { return std::ranges::find_last_if(clause->solutions, not_false); };
+   if (head == clause->solutions.end())
    {
-      if (value(sol) == LiftedBool::False)
-	 continue;
-      if (not unit.empty() || clause->optional)
-      {
-	 // We found a second solution, so we are undecided
-	 if (p == clause->reason)
-	    return AddWork(Work{clause, decisionLevel()});
-	 return true;
-      }
-
-      unit = sol;
+      // Conflict clause. If this clause is non-optional; reject its "reason".
+      if (not clause->optional)
+	 return Enqueue(~clause->reason, clause);
    }
-
-   // The clause is now either unit or conflict
-   if (not unit.empty())
+   else if (value(clause->reason) != LiftedBool::True)
    {
-      // Unit clause. If it is an active clause, enqueue the unit literal.
-      if (value(clause->reason) == LiftedBool::True)
-         return Enqueue(unit, clause);
-      return true;
+      // Inactive clause, nothing to do
+   }
+   else if (not clause->optional && head == find_tail().begin())
+   {
+      // Unit clause. Enqueue the only possible solution
+      return Enqueue(*head, clause);
    }
    else
    {
-      // Conflict clause. If this clause is non-optional; reject it's "reason".
-      if (not clause->optional)
-	 return Enqueue(~clause->reason, clause);
-      return true;
+      // Undecided clause. If this is an activation, queue it for solving
+      if (p == clause->reason)
+	 return AddWork(Work{clause, decisionLevel()});
    }
+   return true;
 }
 
 void Solver::UndoOne()
