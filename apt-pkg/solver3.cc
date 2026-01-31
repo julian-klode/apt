@@ -596,20 +596,11 @@ bool Solver::Solve()
 		      << "(try it: " << candidate->toString(cache) << ")\n";
 	 must_succeed(Assume(*candidate, item.clause));
       }
-      else if (item.clause->optional)
-      {
-	 if (unlikely(debug >= 1))
-	    std::cerr << item.toString(cache) << "\n";
-      }
       else
       {
-	 abort();
+	 assert(item.clause->optional);
 	 if (unlikely(debug >= 1))
 	    std::cerr << item.toString(cache) << "\n";
-	 // Enqueue produces the right error message for us here, given that reason has been assigned true already...
-	 assert(value(item.clause->reason) == LiftedBool::True);
-	 must_succeed(not Enqueue(~item.clause->reason, item.clause));
-	 assert(value(item.clause->reason) == LiftedBool::True);
       }
       // Must push to trail after any Assume() above.
       trail.push_back(Trail{Var(), item});
